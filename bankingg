@@ -60,7 +60,7 @@ int main() {
                 // Option 2: Deposit funds.
                 double depositAmount = 0;
                 printf("Enter amount to deposit: ");
-                if (scanf("%lf", &depositAmount) != 1) {
+                if (scanf("%lf", &depositAmount) != 1|| amount <= 0) {
                     printf("Invalid amount entered. Please try again.\n\n");
                     while (getchar() != '\n'); // Clear erroneous input.
                     break;
