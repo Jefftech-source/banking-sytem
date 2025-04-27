@@ -1,15 +1,8 @@
-#include <stdio.h> 
+#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
-// Debugging macro: Prints formatted debug information to stderr if DEBUG is defined.
-#ifdef DEBUG
-    #define DEBUG_PRINT(fmt, ...) fprintf(stderr, "DEBUG: " fmt "\n", __VA_ARGS__)
-#else
-    #define DEBUG_PRINT(fmt, ...) 
-#endif
-
-// Define a simple structure to represent a bank account.
+// Define a structure to represent a bank account.
 typedef struct {
     int accountNumber;
     double balance;
@@ -23,20 +16,43 @@ void displayMenu() {
     printf("1. Check Balance\n");
     printf("2. Deposit\n");
     printf("3. Withdraw\n");
-    printf("4. Exit\n");
+    printf("4. Transfer Funds\n");
+    printf("5. Exit\n");
     printf("=================================\n");
     printf("Enter your choice: ");
 }
 
-// Main function: Entry point of the application.
-int main() {
-    // Initialize a sample bank account.
-    BankAccount account;
-    account.accountNumber = 1001;
-    account.balance = 1000.00;
+// Function to transfer funds between two bank accounts.
+void transferFunds(BankAccount *fromAccount, BankAccount *toAccount) {
+    double transferAmount;
+    printf("Enter amount to transfer: ");
+    if (scanf("%lf", &transferAmount) != 1 || transferAmount <= 0) {
+        printf("Invalid amount entered. Please try again.\n\n");
+        while (getchar() != '\n'); // Clear input buffer
+        return;
+    }
 
-    printf("Welcome! Your account number is: %d\n", account.accountNumber);
-    printf("Your initial balance is: $%.2f\n\n", account.balance);
+    // Check if the sender has sufficient funds.
+    if (transferAmount > fromAccount->balance) {
+        printf("Error: Insufficient funds. Your current balance is: $%.2f\n\n", fromAccount->balance);
+        return;
+    }
+
+    // Perform the transfer.
+    fromAccount->balance -= transferAmount;
+    toAccount->balance += transferAmount;
+
+    printf("Transfer successful! You transferred $%.2f to account number %d.\n", transferAmount, toAccount->accountNumber);
+    printf("Your new balance is: $%.2f\n\n", fromAccount->balance);
+}
+
+int main() {
+    // Initialize two sample bank accounts.
+    BankAccount account1 = {1001, 1000.00};
+    BankAccount account2 = {1002, 500.00};
+
+    printf("Welcome! Your account number is: %d\n", account1.accountNumber);
+    printf("Your initial balance is: $%.2f\n\n", account1.balance);
 
     int choice = 0;
     while (1) {
@@ -48,62 +64,53 @@ int main() {
             while (getchar() != '\n'); // Clear the input buffer on error.
             continue;
         }
-        
+
         // Process the selected menu option.
         switch (choice) {
             case 1:
                 // Option 1: Display the current balance.
-                printf("Your current balance is: $%.2f\n\n", account.balance);
+                printf("Your current balance is: $%.2f\n\n", account1.balance);
                 break;
 
             case 2: {
                 // Option 2: Deposit funds.
-                double depositAmount = 0;
+                double depositAmount;
                 printf("Enter amount to deposit: ");
-                if (scanf("%lf", &depositAmount) != 1|| amount <= 0) {
+                if (scanf("%lf", &depositAmount) != 1 || depositAmount <= 0) {
                     printf("Invalid amount entered. Please try again.\n\n");
-                    while (getchar() != '\n'); // Clear erroneous input.
+                    while (getchar() != '\n'); // Clear input buffer
                     break;
                 }
-                // Error handling: Deposit amount must be positive.
-                if (depositAmount <= 0) {
-                    printf("Error: Deposit amount must be greater than zero.\n\n");
-                    break;
-                }
-                account.balance += depositAmount;
-                printf("Deposit successful. New balance: $%.2f\n\n", account.balance);
-                DEBUG_PRINT("Deposited: $%.2f, Updated Balance: $%.2f", depositAmount, account.balance);
+                account1.balance += depositAmount;
+                printf("Deposit successful. New balance: $%.2f\n\n", account1.balance);
                 break;
             }
 
             case 3: {
                 // Option 3: Withdraw funds.
-                double withdrawAmount = 0;
+                double withdrawAmount;
                 printf("Enter amount to withdraw: ");
-                if (scanf("%lf", &withdrawAmount) != 1) {
+                if (scanf("%lf", &withdrawAmount) != 1 || withdrawAmount <= 0) {
                     printf("Invalid amount entered. Please try again.\n\n");
-                    while (getchar() != '\n'); // Clear erroneous input.
+                    while (getchar() != '\n'); // Clear input buffer
                     break;
                 }
-                // Error handling: Withdrawal amount must be positive.
-                if (withdrawAmount <= 0) {
-                    printf("Error: Withdrawal amount must be greater than zero.\n\n");
+                if (withdrawAmount > account1.balance) {
+                    printf("Error: Insufficient funds. Your current balance is: $%.2f\n\n", account1.balance);
                     break;
                 }
-                // Error handling: Check for sufficient funds before withdrawal.
-                if (withdrawAmount > account.balance) {
-                    printf("Error: Insufficient funds. Your current balance is: $%.2f\n\n", account.balance);
-                    DEBUG_PRINT("Attempted withdrawal: $%.2f with balance: $%.2f", withdrawAmount, account.balance);
-                    break;
-                }
-                account.balance -= withdrawAmount;
-                printf("Withdrawal successful. New balance: $%.2f\n\n", account.balance);
-                DEBUG_PRINT("Withdrew: $%.2f, Updated Balance: $%.2f", withdrawAmount, account.balance);
+                account1.balance -= withdrawAmount;
+                printf("Withdrawal successful. New balance: $%.2f\n\n", account1.balance);
                 break;
             }
 
             case 4:
-                // Option 4: Exit the program.
+                // Option 4: Transfer funds.
+                transferFunds(&account1, &account2);
+                break;
+
+            case 5:
+                // Option 5: Exit the program.
                 printf("Thank you for using the banking system. Goodbye!\n");
                 exit(0);
 
